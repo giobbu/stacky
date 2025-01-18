@@ -19,10 +19,6 @@ class BivariateAnalyzer:
         Returns:
             dict: A dictionary containing the correlation coefficients and p-values for each method.
         """
-        import seaborn as sns
-        import matplotlib.pyplot as plt
-        import pandas as pd
-
         # Define correlation methods
         methods = {
             'Pearson': stats.pearsonr,
@@ -77,9 +73,6 @@ class BivariateAnalyzer:
         
         plt.title("SCIPY: Correlation (without p-value)")
         plt.show()
-
-
-
         return results
 
 
