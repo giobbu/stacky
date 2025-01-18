@@ -7,14 +7,20 @@
 ├── describe
 │   ├── __init__.py
 │   └── bivariate.py
-├── hypothesis_tests
+├── hypothesis
 │   ├── __init__.py
 │   ├── summary_statistics
-│   │   ├── non-parametric
-│   │   │   └── __init__.py
-│   │   └── parametric
-│   │       ├── __init__.py
-│   │       └── ttest.py
+│   │   ├── categorical
+│   │   │   ├── more
+│   │   │   └── two
+│   │   └── continuous
+│   │       ├── more
+│   │       └── two
+│   │           ├── non-parametric
+│   │           │   └── __init__.py
+│   │           └── parametric
+│   │               ├── __init__.py
+│   │               └── ttest.py
 │   └── timeseries
 │       ├── __init__.py
 │       ├── residuals.py
