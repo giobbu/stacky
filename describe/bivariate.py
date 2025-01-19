@@ -12,13 +12,7 @@ class BivariateAnalyzer:
         self.x = x
         self.y = y
 
-    def plot_corr_scipy(self) -> dict:
-        """
-        Calculate and plot the Pearson, Spearman, and Kendall correlation coefficients and their p-values.
-
-        Returns:
-            dict: A dictionary containing the correlation coefficients and p-values for each method.
-        """
+    def compute_association(self) -> dict:
         # Define correlation methods
         methods = {
             'Pearson': stats.pearsonr,
@@ -27,21 +21,30 @@ class BivariateAnalyzer:
         }
 
         # Compute correlations and p-values for each method
-        results = {}
+        self.results = {}
         for method, func in methods.items():
             corr, pval = func(self.df[self.x], self.df[self.y])
-            results[method] = {
-                'correlation': round(corr, 3),
-                'p-value': round(pval, 4)
+            self.results[method] = {
+                'correlation': float(round(corr, 3)),
+                'p-value': float(round(pval, 4))
             }
+        return self.results
 
+    def plot_corr_scipy(self) -> dict:
+        """
+        Calculate and plot the Pearson, Spearman, and Kendall correlation coefficients and their p-values.
+
+        Returns:
+            dict: A dictionary containing the correlation coefficients and p-values for each method.
+        """
+        
         # Define critical thresholds
         critical_values = [0.001, 0.01, 0.05]
 
         # Prepare a DataFrame for critical value significance analysis
         pval_df = pd.DataFrame(index=[str(threshold) for threshold in critical_values])
 
-        for method, result in results.items():
+        for method, result in self.results.items():
             pval_df[method] = [
                 1 if result['p-value'] <= threshold else 0 for threshold in critical_values
             ]
@@ -51,8 +54,8 @@ class BivariateAnalyzer:
         pval_df.columns = ["critical", "method", "significant"]
 
         # Add correlation and p-value columns for plotting
-        pval_df["correlation"] = pval_df["method"].apply(lambda x: results[x]["correlation"])
-        pval_df["p-value"] = pval_df["method"].apply(lambda x: results[x]["p-value"])
+        pval_df["correlation"] = pval_df["method"].apply(lambda x: self.results[x]["correlation"])
+        pval_df["p-value"] = pval_df["method"].apply(lambda x: self.results[x]["p-value"])
         # create unique coluln with method and p-value
         pval_df["method_pval"] = pval_df["method"] + " (p-value: " + pval_df["p-value"].astype(str) + ")"
 
@@ -70,14 +73,9 @@ class BivariateAnalyzer:
                     vmin=-1,  # Ensure -1 is the minimum value
                     vmax=1,  # Ensure 1 is the maximum value
                     )
-        
         plt.title("SCIPY: Correlation (without p-value)")
         plt.show()
-        return results
 
-
-        
-    
     def plot_scatter(self) -> None:
         sns.scatterplot(data=self.df, x=self.x, y=self.y)
         plt.show()
@@ -109,10 +107,12 @@ if __name__ == "__main__":
     duration = 10 + waiting + np.random.normal(0, 1, n)
     df = pd.DataFrame({"waiting": waiting, "duration": duration})
     bivariate = BivariateAnalyzer(df=df, x="waiting", y="duration")
+    results = bivariate.compute_association()
+    print(results)
     # bivariate.plot_scatter()
     # bivariate.plot_kde()
     # bivariate.plot_pairplot()
     # bivariate.plot_jointplot()
     # bivariate.plot_ecdf()
     # bivariate.plot_corr_pandas()
-    bivariate.plot_corr_scipy()
+    results = bivariate.plot_corr_scipy()
