@@ -15,13 +15,14 @@ class RecurrentMean:
         self.current_mean = current_mean
         self.num_iterations = num_iterations
 
-
     def update(self, observation: np.ndarray) -> None:
+        self.num_iterations += 1
         if self.current_mean is None:
             self.current_mean = observation
         else:
-            self.current_mean = self.current_mean + (observation - self.current_mean) / (self.num_iterations + 1)
-        self.num_iterations += 1
+            alpha = (self.num_iterations-1)/self.num_iterations  # alpha depends on the number of points, it is not free
+            self.current_mean = alpha*self.current_mean + (1-alpha)*observation
+
 
 if __name__=="__main__":
     # create some observations univariate
