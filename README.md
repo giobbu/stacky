@@ -1,9 +1,11 @@
 # STACKY
 
-## Exploratory Data Analysis with `describe/` folder
+## Exploratory Data Analysis with `describe/`
 
 ## Variables transformation with `transform/`
 
-## Learning algorithm performance evaluation with `metrics/` and `hypothesis/`
+## Evaluation metrics with `metrics/` 
 
-## Recursive filters in `recursive/`
+## Hypothesis testing with `hypothesis/`
+
+## Recursive filters with `recursive/`
