@@ -26,13 +26,16 @@ class RecursiveAverageFilter:
 
 
 if __name__=="__main__":
+    
     # create some observations univariate
     observations = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    
     # create the model
     model = RecursiveAverageFilter()
     # update the model with each observation
     for observation in observations:
         model.update(observation)
+    
     # print the final mean
     print(model.current_mean)
     # print batch mean

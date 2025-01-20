@@ -28,6 +28,7 @@ class MovingAverageFilter:
 if __name__=="__main__":
     # create univariate data
     observations = np.random.normal(5, 1, 1000)
+    
     # instanciate model
     model = MovingAverageFilter(window=10)
     # update the model with each observation
@@ -35,6 +36,7 @@ if __name__=="__main__":
     for observation in observations:
         model.update(observation)
         list_moving_avg.append(model.current_mean)
+    
     # plot results displaying data and moving average
     import matplotlib.pyplot as plt
     plt.figure(figsize=(10,5))
