@@ -129,3 +129,11 @@ if __name__ == "__main__":
     rmse = np.sqrt(np.mean(np.array(list_residuals) ** 2))
     print(f"Root Mean Squared Error: {rmse}")
 
+    # Plot predictions and observations
+    # plot results displaying data and moving average
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(10,5))
+    plt.plot(list_observed)
+    plt.plot(list_predictions)
+    plt.show()
+
