@@ -1,6 +1,6 @@
 import numpy as np
 
-class RecurrentMean:
+class RecursiveMeanFilter:
     """
     Recurrent Least Squares algorithm for adaptive learning.
     """
@@ -16,6 +16,7 @@ class RecurrentMean:
         self.num_iterations = num_iterations
 
     def update(self, observation: np.ndarray) -> None:
+        " "
         self.num_iterations += 1
         if self.current_mean is None:
             self.current_mean = observation
@@ -28,7 +29,7 @@ if __name__=="__main__":
     # create some observations univariate
     observations = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     # create the model
-    model = RecurrentMean()
+    model = RecursiveMeanFilter()
     # update the model with each observation
     for observation in observations:
         model.update(observation)
