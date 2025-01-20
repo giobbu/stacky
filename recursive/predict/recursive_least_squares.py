@@ -1,8 +1,8 @@
 import numpy as np
 
-class RecurrentLeastSquares:
+class RecursiveLeastSquaresFilter:
     """
-    Recurrent Least Squares algorithm for adaptive learning.
+    Recursive Least Squares Filter algorithm for adaptive learning.
     """
 
     def __init__(self, num_variables: int, forgetting_factor: float, initial_delta: float) -> None:
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     initial_delta = 0.1
 
     # Initialize model
-    model = RecurrentLeastSquares(num_variables=num_lags, 
+    model = RecursiveLeastSquaresFilter(num_variables=num_lags, 
                                     forgetting_factor=forgetting_factor, 
                                     initial_delta=initial_delta)
     
@@ -128,4 +128,12 @@ if __name__ == "__main__":
     # Compute the root mean squared error
     rmse = np.sqrt(np.mean(np.array(list_residuals) ** 2))
     print(f"Root Mean Squared Error: {rmse}")
+
+    # Plot predictions and observations
+    # plot results displaying data and moving average
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(10,5))
+    plt.plot(list_observed)
+    plt.plot(list_predictions)
+    plt.show()
 
