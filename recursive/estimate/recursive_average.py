@@ -2,27 +2,20 @@ import numpy as np
 
 class RecursiveAverageFilter:
     """
-    Recurrent Least Squares algorithm for adaptive learning.
+    Recursive Average Filter algorithm for filtering out high frequency noise.
     """
-    def __init__(self, current_mean: np.ndarray = None, num_iterations: int = 0) -> None:
-        """
-        Initialize the RecurrentMean object.
-
-        Parameters:
-        - current_mean: np.ndarray, current mean
-        - num_iterations: int, number of iterations
-        """
-        self.current_mean = current_mean
+    def __init__(self, recursive_mean: np.ndarray = None, num_iterations: int = 0) -> None:
+        self.recursive_mean = recursive_mean
         self.num_iterations = num_iterations
 
     def update(self, observation: np.ndarray) -> None:
         " "
         self.num_iterations += 1
-        if self.current_mean is None:
-            self.current_mean = observation
+        if self.recursive_mean is None:
+            self.recursive_mean = observation
         else:
             alpha = (self.num_iterations-1)/self.num_iterations  # alpha depends on the number of points, it is not free
-            self.current_mean = alpha*self.current_mean + (1-alpha)*observation
+            self.recursive_mean = alpha*self.recursive_mean + (1-alpha)*observation
 
 
 if __name__=="__main__":
@@ -37,6 +30,6 @@ if __name__=="__main__":
         model.update(observation)
     
     # print the final mean
-    print(model.current_mean)
+    print(model.recursive_mean)
     # print batch mean
     print(np.mean(observations))
