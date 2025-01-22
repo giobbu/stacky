@@ -373,6 +373,26 @@ python-dateutil = ">=2.7"
 dev = ["meson-python (>=0.13.1,<0.17.0)", "pybind11 (>=2.13.2,!=2.13.3)", "setuptools (>=64)", "setuptools_scm (>=7)"]
 
 [[package]]
+name = "missingno"
+version = "0.5.2"
+description = "Missing data visualization module for Python."
+optional = false
+python-versions = "*"
+files = [
+    {file = "missingno-0.5.2-py3-none-any.whl", hash = "sha256:55782621ce09ba0f0a1d08e5bd6d6fe1946469fb03951fadf7d209911ca5b072"},
+    {file = "missingno-0.5.2.tar.gz", hash = "sha256:4a4baa9ca9f9e4e0d9402455df26b656632e94b99e87fa64c0cdbbbc722837ac"},
+]
+
+[package.dependencies]
+matplotlib = "*"
+numpy = "*"
+scipy = "*"
+seaborn = "*"
+
+[package.extras]
+tests = ["pytest", "pytest-mpl"]
+
+[[package]]
 name = "numpy"
 version = "2.2.1"
 description = "Fundamental package for array computing in Python"
@@ -988,4 +1008,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "22a0c5046e23c5178517c5292a90b041fb360af3038e44848b535938f1ad14d7"
+content-hash = "ea785f9b3e545da7b28a166118d7691e2b623cada72b7be60a7f255e4871515c"
