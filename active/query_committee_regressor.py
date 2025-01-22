@@ -1,102 +1,126 @@
 import numpy as np
 
 class QueryCommitteeRegression:
-    " Query by committee for regression. "
+    """
+    Query by Committee for regression tasks, allowing active learning strategies
+    like disagreement, random selection, and exploration-exploitation.
+    """
 
-    def __init__(self, X_train, y_train, n_queries, query_strategy, n_members=3, list_of_models=None):
-        assert len(list_of_models) == n_members, "Number of models must be equal to n_members."
+    def __init__(self, X_train : np.ndarray, y_train : np.ndarray, n_queries : int, query_strategy : str, n_members : int=3, list_of_models: list =None) -> None:
+        if list_of_models is None or len(list_of_models) != n_members:
+            raise ValueError("Number of models must match n_members.")
         self.X_train = X_train
         self.y_train = y_train
         self.n_queries = n_queries
         self.query_strategy = query_strategy
-        self.n_members = n_members,
+        self.n_members = n_members
         self.list_of_models = list_of_models
-    
-    def __repr__(self):
-        return f"QueryByCommittee(n_queries={self.n_queries}, query_strategy={self.query_strategy}, n_members={self.n_members})"
-    
-    def _fit_models(self, model, X, y):
-        " Fit the models on the training data. "
-        fitted_model = model.fit(X, y)
-        return fitted_model
-
-    def init_committee(self):
-        " Initialize the committee of models. "
         self.fitted_models = []
-        for model in self.list_of_models:
-            fitted_model = self._fit_models(model, self.X_train, self.y_train)
-            self.fitted_models.append(fitted_model)
 
-    def _committee_predictions(self, X):
-        " Make predictions using the committee of models. "
-        predictions = []
-        for model in self.fitted_models:
-            prediction = model.predict(X)
-            predictions.append(prediction)
-        return np.array(predictions)
-            
-    def _committee_disagreement(self, X):
-        " Compute the disagreement among the committee members. "
+    def __repr__(self):
+        return (
+            f"QueryCommitteeRegression(n_queries={self.n_queries}, "
+            f"query_strategy='{self.query_strategy}', n_members={self.n_members})"
+        )
+
+    def _fit_model(self, model: object, X: np.ndarray, y: np.ndarray) -> object:
+        """Fit a single model on the training data."""
+        return model.fit(X, y)
+
+    def init_committee(self) -> None:
+        """Initialize the committee by fitting all models on the training data."""
+        self.fitted_models = [self._fit_model(model, self.X_train, self.y_train) for model in self.list_of_models]
+
+    def _committee_predictions(self, X: np.ndarray) -> np.ndarray:
+        """Generate predictions from all committee members."""
+        return np.array([model.predict(X) for model in self.fitted_models])
+
+    def _committee_disagreement(self, X: np.ndarray) -> np.ndarray:
+        """Compute the disagreement (variance) among the committee members' predictions."""
         predictions = self._committee_predictions(X)
         mean_predictions = predictions.mean(axis=0)
-        ambiguity = np.sum((predictions - mean_predictions)**2, axis=0)
-        return ambiguity
-    
-    def committee_query(self, X):
-        " Query the most informative points. "
-        disagreement = self._committee_disagreement(X)
-        # get the indices to query the most informative point
-        query_idx = np.argsort(disagreement)[-1]
-        return query_idx
-    
-    def committee_teach(self, X_test, y_test):
-        " Teach the committee the new data."
+        disagreement = np.sum((predictions - mean_predictions) ** 2, axis=0)
+        return disagreement
+
+    def _select_query_idx(self, X: np.ndarray) -> int:
+        """Select the query index based on the current query strategy."""
+        if self.query_strategy == "disagree":
+            return np.argmax(self._committee_disagreement(X))
+        elif self.query_strategy == "random":
+            return np.random.randint(0, X.shape[0])
+        elif self.query_strategy == "exploration-exploitation":
+            return (
+                np.argmax(self._committee_disagreement(X))
+                if np.random.rand() < 0.5
+                else np.random.randint(0, X.shape[0])
+            )
+        else:
+            raise ValueError("Invalid query strategy.")
+
+    def committee_teach_selective(self, X_test: np.ndarray, y_test: np.ndarray) -> tuple:
+        """
+        Iteratively teach the committee by selecting informative points based on
+        the query strategy, and retrain the committee with the updated training set.
+
+        Returns:
+            list_queries: List of queried points.
+            list_insample_rmse: RMSE on the training set after each iteration.
+            list_outsample_rmse: RMSE on the test set after each iteration.
+            X_test: Remaining test features after queries.
+            y_test: Remaining test labels after queries.
+        """
         list_queries = []
         list_insample_rmse = []
         list_outsample_rmse = []
-        for query in range(self.n_queries):
-            if self.query_strategy == "disagree":
-                query_idx = self.committee_query(X_test)
-            elif self.query_strategy == "random":
-                query_idx = np.random.randint(0, X_test.shape[0])
-            elif self.query_strategy == "exploration-exploitation":
-                # widraw a number between 0 and 1
-                p = np.random.rand()
-                if p < 0.5:
-                    query_idx = self.committee_query(X_test)
-                else:
-                    query_idx = np.random.randint(0, X_test.shape[0])
-            else:
-                raise ValueError("Invalid query strategy.")
-            # get the query point
+
+        for _ in range(self.n_queries):
+            query_idx = self._select_query_idx(X_test)
+
+            # Retrieve and store the queried point
             X_query = X_test[query_idx]
             y_query = y_test[query_idx]
-            # add the query point to the training data
+            list_queries.append(X_query)
+
+            # Update training data
             self.X_train = np.vstack((self.X_train, X_query))
             self.y_train = np.hstack((self.y_train, y_query))
-            # refit the models
+
+            # Refit the committee
             self.init_committee()
-            # remove the query point from the test data
+
+            # Remove the queried point from the test set
             X_test = np.delete(X_test, query_idx, axis=0)
             y_test = np.delete(y_test, query_idx)
-            # store the query point
-            list_queries.append(X_query)
-            # compute insample and outsample rmse
-            insample_predictions = self.committee_predict(self.X_train)[0]
-            insample_rmse = np.sqrt(np.mean((self.y_train - insample_predictions)**2))
-            outsample_predictions = self.committee_predict(X_test)[0]
 
-            outsample_rmse = np.sqrt(np.mean((y_test - outsample_predictions)**2))
+            # Calculate RMSE
+            insample_predictions = self.committee_predict(self.X_train)[0]
+            insample_rmse = np.sqrt(np.mean((self.y_train - insample_predictions) ** 2))
+
+            outsample_predictions = self.committee_predict(X_test)[0]
+            outsample_rmse = np.sqrt(np.mean((y_test - outsample_predictions) ** 2))
+
             list_insample_rmse.append(insample_rmse)
             list_outsample_rmse.append(outsample_rmse)
 
         return list_queries, list_insample_rmse, list_outsample_rmse, X_test, y_test
-    
-    def committee_predict(self, X):
-        " Make predictions using the committee of models. "
+
+    def committee_predict(self, X: np.ndarray) -> tuple:
+        """Predict using the committee: return mean and standard deviation of predictions."""
         predictions = self._committee_predictions(X)
         return predictions.mean(axis=0), predictions.std(axis=0)
 
+
+    # def _bootstrap(self, X, y):
+    #     pass
+
+    # def _subsample(self, X, y):
+    #     pass
+
+    # def _pool():
+    #     pass
+
+    # def _selective(self):
+    #     pass
 
 
 if __name__=="__main__":
