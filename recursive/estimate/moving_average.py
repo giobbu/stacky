@@ -20,7 +20,7 @@ class MovingAverageFilter:
             self.observations.append(observation)
         else:
             self.observations.append(observation)
-            self.moving_mean = self.moving_mean + (self.observations[-1] - self.observations[0])/self.window
+            self.moving_mean += (self.observations[-1] - self.observations[0])/self.window
             del self.observations[0]
             
 
