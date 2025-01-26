@@ -1,58 +1,111 @@
 import pandas as pd
+from typing import Union, Literal
 
 class UnivariateMissingImputer:
-    """ Univariate missing value imputation methods """
+    """Univariate missing value imputation methods."""
 
-    def __init__(self, df):
-        assert isinstance(df, pd.DataFrame), 'Input must be a pandas DataFrame'
+    def __init__(self, df: pd.DataFrame):
+        """
+        Initialize the UnivariateMissingImputer.
+
+        :param df: Input pandas DataFrame.
+        """
+        assert isinstance(df, pd.DataFrame), "Input must be a pandas DataFrame"
         self.df = df
 
-    def fill_summary_statistics(self, column, method='mean'):
-        " Impute missing values with summary statistics"
-        if method == 'mean':
+    def fill_summary_statistics(
+        self, column: str, method: Literal["mean", "median", "mode"] = "mean"
+    ) -> pd.Series:
+        """
+        Impute missing values with summary statistics.
+
+        :param column: Column name to impute.
+        :param method: Imputation method ('mean', 'median', or 'mode').
+        :return: Series with imputed values.
+        """
+        if method == "mean":
             return self.df[column].fillna(self.df[column].mean())
-        elif method == 'median':
+        elif method == "median":
             return self.df[column].fillna(self.df[column].median())
-        elif method == 'mode':
+        elif method == "mode":
             return self.df[column].fillna(self.df[column].mode()[0])
         else:
-            raise ValueError('Method not supported')
-        
-    def fill_constant(self, column, value):
-        " Impute missing values with a constant"
+            raise ValueError(f"Method '{method}' not supported. Use 'mean', 'median', or 'mode'.")
+
+    def fill_constant(self, column: str, value: Union[int, float, str]) -> pd.Series:
+        """
+        Impute missing values with a constant.
+
+        :param column: Column name to impute.
+        :param value: Constant value to use for imputation.
+        :return: Series with imputed values.
+        """
         return self.df[column].fillna(value)
 
-    def fill_backfill(self, column):
-        " Impute missing values with the next valid observation"
-        return self.df[column].fillna(method='backfill')
-    
-    def fill_forwardfill(self, column):
-        " Impute missing values with the last valid observation"
-        return self.df[column].fillna(method='ffill')
+    def fill_backfill(self, column: str) -> pd.Series:
+        """
+        Impute missing values with the next valid observation.
 
-    def fill_most_frequent(self, column):
-        " Impute missing values with the most frequent value"
+        :param column: Column name to impute.
+        :return: Series with imputed values.
+        """
+        return self.df[column].fillna(method="backfill")
+
+    def fill_forwardfill(self, column: str) -> pd.Series:
+        """
+        Impute missing values with the last valid observation.
+
+        :param column: Column name to impute.
+        :return: Series with imputed values.
+        """
+        return self.df[column].fillna(method="ffill")
+
+    def fill_most_frequent(self, column: str) -> pd.Series:
+        """
+        Impute missing values with the most frequent value.
+
+        :param column: Column name to impute.
+        :return: Series with imputed values.
+        """
         return self.df[column].fillna(self.df[column].value_counts().index[0])
 
-    def fill_rolling_statistics(self, column, window=3, method='mean'):
-        " Impute missing values with rolling summary statistics"
-        if method == 'mean':
+    def fill_rolling_statistics(
+        self, column: str, window: int = 3, method: Literal["mean", "median"] = "mean"
+    ) -> pd.Series:
+        """
+        Impute missing values with rolling summary statistics.
+
+        :param column: Column name to impute.
+        :param window: Rolling window size.
+        :param method: Rolling method ('mean' or 'median').
+        :return: Series with imputed values.
+        """
+        if method == "mean":
             return self.df[column].fillna(self.df[column].rolling(window=window, min_periods=1).mean())
-        elif method == 'median':
+        elif method == "median":
             return self.df[column].fillna(self.df[column].rolling(window=window, min_periods=1).median())
         else:
-            raise ValueError('Method not supported')
-        
-    def fill_interpolate(self, column, method='linear', order=0):
-        """Impute missing values with interpolation."""
-        supported_methods = ['linear', 'quadratic', 'cubic', 'polynomial', 'spline']
-        assert method in supported_methods, f'Method {method} not supported. Supported methods: {supported_methods}'
-        if method in ['polynomial', 'spline']:
-            assert order > 0, 'Order must be greater than 0 for polynomial or spline interpolation'
-        if method == 'polynomial' or method == 'spline':
-            return self.df[column].interpolate(method=method, order=order)
-        else:
-            return self.df[column].interpolate(method=method)
+            raise ValueError(f"Method '{method}' not supported. Use 'mean' or 'median'.")
+
+    def fill_interpolate(
+        self, column: str, method: Literal["linear", "quadratic", "cubic", "polynomial", "spline"] = "linear", order: int = 0
+    ) -> pd.Series:
+        """
+        Impute missing values with interpolation.
+
+        :param column: Column name to impute.
+        :param method: Interpolation method ('linear', 'quadratic', 'cubic', 'polynomial', or 'spline').
+        :param order: Order of interpolation (required for 'polynomial' and 'spline').
+        :return: Series with imputed values.
+        """
+        supported_methods = ["linear", "quadratic", "cubic", "polynomial", "spline"]
+        if method not in supported_methods:
+            raise ValueError(f"Method '{method}' not supported. Supported methods: {supported_methods}")
+
+        if method in ["polynomial", "spline"] and order <= 0:
+            raise ValueError("Order must be greater than 0 for polynomial or spline interpolation.")
+
+        return self.df[column].interpolate(method=method, order=order if method in ["polynomial", "spline"] else None)
 
 if __name__=='__main__':
     # create 1000x5 dataframe with 10% missing values
