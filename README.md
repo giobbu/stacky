@@ -1,11 +1,3 @@
 # STACKY
 
-## Exploratory Data Analysis with `describe/`
-
-## Variables transformation with `transform/`
-
-## Evaluation metrics with `metrics/` 
-
-## Hypothesis testing with `hypothesis/`
-
-## Recursive filters with `recursive/`
+Tools utilized before, during, and after the ML models creation process.
