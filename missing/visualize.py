@@ -3,7 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 
-class MissVisualize:
+class MissingVisualize:
     def __init__(self, df):
         self.df = df
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     df = pd.DataFrame(np.random.rand(1000, 5))
     df.columns = ['A', 'B', 'C', 'D', 'E']
     df[df < 0.1] = np.nan
-    mv = MissVisualize(df)
+    mv = MissingVisualize(df)
     mv.matrix()
     mv.bar()
     mv.heatmap()
