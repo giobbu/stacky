@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List, Tuple, Optional
 
 class QueryCommitteeRegression:
     """
@@ -6,7 +7,25 @@ class QueryCommitteeRegression:
     like disagreement, random selection, and exploration-exploitation.
     """
 
-    def __init__(self, X_train : np.ndarray, y_train : np.ndarray, n_queries : int, query_strategy : str, n_members : int=3, list_of_models: list =None) -> None:
+    def __init__(
+        self,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        n_queries: int,
+        query_strategy: str,
+        n_members: int = 3,
+        list_of_models: Optional[List[object]] = None,
+    ) -> None:
+        """
+        Initialize the QueryCommitteeRegression.
+
+        :param X_train: Training feature matrix.
+        :param y_train: Training target vector.
+        :param n_queries: Number of queries to perform.
+        :param query_strategy: Strategy for selecting queries ("disagree", "random", or "exploration-exploitation").
+        :param n_members: Number of committee members.
+        :param list_of_models: List of models to use as committee members. Must match `n_members`.
+        """
         if list_of_models is None or len(list_of_models) != n_members:
             raise ValueError("Number of models must match n_members.")
         self.X_train = X_train
@@ -17,7 +36,7 @@ class QueryCommitteeRegression:
         self.list_of_models = list_of_models
         self.fitted_models = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"QueryCommitteeRegression(n_queries={self.n_queries}, "
             f"query_strategy='{self.query_strategy}', n_members={self.n_members})"
@@ -57,17 +76,21 @@ class QueryCommitteeRegression:
         else:
             raise ValueError("Invalid query strategy.")
 
-    def committee_teach_selective(self, X_test: np.ndarray, y_test: np.ndarray) -> tuple:
+    def committee_teach_selective(
+        self, X_test: np.ndarray, y_test: np.ndarray
+    ) -> Tuple[List[np.ndarray], List[float], List[float], np.ndarray, np.ndarray]:
         """
         Iteratively teach the committee by selecting informative points based on
         the query strategy, and retrain the committee with the updated training set.
 
-        Returns:
-            list_queries: List of queried points.
-            list_insample_rmse: RMSE on the training set after each iteration.
-            list_outsample_rmse: RMSE on the test set after each iteration.
-            X_test: Remaining test features after queries.
-            y_test: Remaining test labels after queries.
+        :param X_test: Test feature matrix.
+        :param y_test: Test target vector.
+        :return: A tuple containing:
+            - List of queried points.
+            - RMSE on the training set after each iteration.
+            - RMSE on the test set after each iteration.
+            - Remaining test features after queries.
+            - Remaining test labels after queries.
         """
         list_queries = []
         list_insample_rmse = []
@@ -104,7 +127,7 @@ class QueryCommitteeRegression:
 
         return list_queries, list_insample_rmse, list_outsample_rmse, X_test, y_test
 
-    def committee_predict(self, X: np.ndarray) -> tuple:
+    def committee_predict(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Predict using the committee: return mean and standard deviation of predictions."""
         predictions = self._committee_predictions(X)
         return predictions.mean(axis=0), predictions.std(axis=0)
