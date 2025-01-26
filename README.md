@@ -1,3 +1,3 @@
 # STACKY
 
-Analysis stacked around machine learning models.
+Tools utilized before, during, and after the ML models creation process.
