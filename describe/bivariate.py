@@ -75,7 +75,6 @@ class BivariateAnalyzer:
                 'relation': float(round(corr, 3)),
                 'p-value': float(round(pval, 4))
             }
-
         # Add mutual information results if enabled
         if self.mutual_info_enabled:
             mi_score, p_value = self._compute_mutual_info()
@@ -83,7 +82,6 @@ class BivariateAnalyzer:
                 'relation': mi_score,
                 'p-value': p_value
             }
-
         return self.results
 
     def plot_association(self) -> dict:
@@ -129,7 +127,7 @@ class BivariateAnalyzer:
                     vmin=-1,  # Ensure -1 is the minimum value
                     vmax=1,  # Ensure 1 is the maximum value
                     )
-        plt.title("SCIPY: Correlation (without p-value)")
+        plt.title(" Association between variables and significance levels")
         plt.show()
 
     def plot_scatter(self) -> None:
@@ -163,14 +161,7 @@ if __name__ == "__main__":
     duration = 10 * waiting**2 + np.random.normal(0, 0.1, n)
     df = pd.DataFrame({"waiting": waiting, "duration": duration})
     
-    bivariate = BivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True)
-    results = bivariate.compute_association()
-    print(results)
-    print('--'*20)
-
     params = {'n_neighbors': 15, 'num_permutations': 100, 'num_jobs': -1}
     bivariate = BivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True, mi_params=params)
     results = bivariate.compute_association()
-    print(results)
-
     bivariate.plot_association()
