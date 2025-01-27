@@ -6,5 +6,6 @@
 * ### Moving Average Filter
 * ### Low Pass Filter
 
-## Estimate & Predict
+## Estimate and Predict
 * ### Recursive Least Square Filter
+* ### LinearKalman Filter with Gaussian noise for process and measurement
