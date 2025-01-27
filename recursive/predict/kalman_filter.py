@@ -1,8 +1,8 @@
 import numpy as np
 
 class KalmanFilter:
-
-    def __init__(self, A, H, Q, R, x0, P0):
+    """ Linear Kalman filter for state estimation. """
+    def __init__(self, A : np.ndarray, H : np.ndarray, Q : np.ndarray, R : np.ndarray, x0 : np.ndarray, P0 : np.ndarray) -> None:
         self.A = A  # state transition matrix
         self.H = H  # observation matrix
         self.Q = Q  # state covariance
@@ -10,12 +10,17 @@ class KalmanFilter:
         self.x = x0  # initial state
         self.P = P0  # initial state covariance
 
-    def update(self, z):
-        K = self.P @ self.H.T @ np.linalg.inv(self.H @ self.P @ self.H.T + self.R)  # Kalman gain
-        self.x = self.x + K @ (z - self.H @ self.x)  # state update
+    def update(self, z : np.ndarray) -> None:
+        " Update the state estimate with a new observation. "
+        # Kalman filter update
+        innovation = z - self.H @ self.x  # innovation
+        innovation_cov = self.H @ self.P @ self.H.T + self.R  # innovation covariance
+        K = self.P @ self.H.T @ np.linalg.inv(innovation_cov)  # Kalman gain
+        self.x = self.x + K @ innovation  # state update
         self.P = (np.eye(self.P.shape[0]) - K @ self.H) @ self.P  # state covariance update
 
-    def predict(self):
+    def predict(self) -> tuple:
+        " Predict the next state. "
         self.x = self.A @ self.x  # state prediction
         self.P = self.A @ self.P @ self.A.T + self.Q  # state covariance prediction
         return self.x, self.P
