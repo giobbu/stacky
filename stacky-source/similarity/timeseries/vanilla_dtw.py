@@ -3,8 +3,8 @@ import scipy as sp
 from numba import jit
 import seaborn as sns
 
-class SimpleDTW:
-    """ Simple Dynamic Time Warping (DTW) implementation."""
+class VanillaDTW:
+    """ Basic Dynamic Time Warping (DTW) implementation."""
     def __init__(self, X, Y, metric='euclidean'):
         self.X = X
         self.Y = Y
@@ -58,16 +58,19 @@ class SimpleDTW:
         return np.array(P)
 
 if __name__=='__main__':
+
     # Create two random time series cosine waves shifted by pi/2
     X = np.cos(np.linspace(0, 3*np.pi, 100))
     Y = np.cos(np.linspace(np.pi/2, 3*np.pi + np.pi/2, 100))
     # to list
     X = X.tolist()
     Y = Y.tolist()
-    dtw = SimpleDTW(X, Y)
+    dtw = VanillaDTW(X, Y)
     C = dtw.compute_cost_matrix()
     D = dtw.compute_accumulated_cost_matrix()
     P = dtw.compute_optimal_warping_path()
+
+    # Print the cost matrix, accumulated cost matrix, and optimal warping path
     print(' Cost matrix:')
     print(C)
     print(' Accumulated cost matrix:')
@@ -77,6 +80,7 @@ if __name__=='__main__':
 
     import matplotlib.pyplot as plt
 
+    # Plot the cost matrix and optimal warping path
     P = np.array(P) 
     fig = plt.figure(figsize=(9, 3))
     plt.subplot(1, 2, 1)
@@ -89,6 +93,7 @@ if __name__=='__main__':
     plt.ylabel('Sequence X')
     fig.savefig('img/cost_matrix.png')
 
+    # Plot the accumulated cost matrix and optimal warping path
     plt.subplot(1, 2, 2)
     plt.imshow(D, cmap="YlGnBu", origin='lower', aspect='equal')
     plt.plot(P[:, 1], P[:, 0], marker='o', color='r')
@@ -101,14 +106,12 @@ if __name__=='__main__':
     fig.savefig('img/accumulated_cost_matrix.png')
     plt.show()
 
+    # Plot the two time series and the optimal warping path
     fig, ax = plt.subplots(figsize=(10, 5))
-    # Remove the border and axes ticks
     fig.patch.set_visible(False)
     ax.axis('off')
-
     for [map_x, map_y] in P:
         ax.plot([map_x, map_y], [X[map_x], Y[map_y]], '--k', linewidth=4)
-
     ax.plot(X, '-ro', label='x', linewidth=4, markersize=20, markerfacecolor='salmon', markeredgecolor='salmon')
     ax.plot(Y, '-bo', label='y', linewidth=4, markersize=20, markerfacecolor='skyblue', markeredgecolor='skyblue')
     ax.set_title("DTW Distance", fontsize=28, fontweight="bold")
