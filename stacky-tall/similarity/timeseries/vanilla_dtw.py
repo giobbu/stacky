@@ -86,7 +86,7 @@ if __name__=='__main__':
     fig = plt.figure(figsize=(9, 3))
     plt.subplot(1, 2, 1)
     plt.imshow(C, cmap="YlGnBu", origin='lower', aspect='equal')
-    plt.plot(P[:, 1], P[:, 0], marker='o', color='r')
+    plt.plot(P[:, 1], P[:, 0], marker='o', color='r', markersize=1)
     plt.clim([0, np.max(C)])
     plt.colorbar()
     plt.title('$C$ with optimal warping path')
@@ -97,7 +97,7 @@ if __name__=='__main__':
     # Plot the accumulated cost matrix and optimal warping path
     plt.subplot(1, 2, 2)
     plt.imshow(D, cmap="YlGnBu", origin='lower', aspect='equal')
-    plt.plot(P[:, 1], P[:, 0], marker='o', color='r')
+    plt.plot(P[:, 1], P[:, 0], marker='o', color='r', markersize=1)
     plt.clim([0, np.max(D)])
     plt.colorbar()
     plt.title('$D$ with optimal warping path')
@@ -110,12 +110,13 @@ if __name__=='__main__':
     # Plot the two time series and the optimal warping path
     fig, ax = plt.subplots(figsize=(10, 5))
     fig.patch.set_visible(False)
-    ax.axis('off')
+    # add grid
+    ax.grid(True)
     for [map_x, map_y] in P:
-        ax.plot([map_x, map_y], [X[map_x], Y[map_y]], '--k', linewidth=4)
-    ax.plot(X, '-ro', label='x', linewidth=4, markersize=20, markerfacecolor='salmon', markeredgecolor='salmon')
-    ax.plot(Y, '-bo', label='y', linewidth=4, markersize=20, markerfacecolor='skyblue', markeredgecolor='skyblue')
-    ax.set_title("DTW Distance", fontsize=28, fontweight="bold")
+        ax.plot([map_x, map_y], [X[map_x], Y[map_y]], '--k', linewidth=2, color='gray')
+    ax.plot(X, '-ro', label='x', linewidth=4, markersize=8, markerfacecolor='black', markeredgecolor='salmon', alpha=0.5)
+    ax.plot(Y, '-bo', label='y', linewidth=4, markersize=8, markerfacecolor='black', markeredgecolor='skyblue', alpha=0.5)
+    ax.set_title("DTW Distance", fontsize=10, fontweight="bold")
     ax.legend(fontsize=20)
     plt.tight_layout()
     fig.savefig('img/dtw_distance.png')
