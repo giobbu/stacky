@@ -10,13 +10,13 @@ class VanillaDTW:
         self.Y = Y
         self.metric = metric
 
-    def compute_cost_matrix(self):
+    def compute_cost_matrix(self) -> np.ndarray:
         " Compute the cost matrix using the specified metric."
         X, Y = np.atleast_2d(self.X, self.Y)
         self.C = sp.spatial.distance.cdist(X.T, Y.T, metric=self.metric)
         return self.C
 
-    def compute_accumulated_cost_matrix(self):
+    def compute_accumulated_cost_matrix(self) -> np.ndarray:
         " Compute the accumulated cost matrix using dynamic programming."
         N = self.C.shape[0]
         M = self.C.shape[1]
@@ -31,7 +31,7 @@ class VanillaDTW:
                 self.D[n, m] = self.C[n, m] + min(self.D[n-1, m], self.D[n, m-1], self.D[n-1, m-1])
         return self.D
 
-    def compute_optimal_warping_path(self):
+    def compute_optimal_warping_path(self) -> np.ndarray:
         """Compute the warping path given an accumulated cost matrix
         """
         N = self.D.shape[0]
