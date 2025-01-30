@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 from numba import jit
+import seaborn as sns
 
 class SimpleDTW:
     """ Simple Dynamic Time Warping (DTW) implementation."""
@@ -58,8 +59,12 @@ class SimpleDTW:
         return np.array(P)
 
 if __name__=='__main__':
-    X = [1, 2, 3, 4, 5]
-    Y = [2, 3, 4, 10, 5]
+    # Create two random time series cosine waves shifted by pi/2
+    X = np.cos(np.linspace(0, 3*np.pi, 100))
+    Y = np.cos(np.linspace(np.pi/2, 3*np.pi + np.pi/2, 100))
+    # to list
+    X = X.tolist()
+    Y = Y.tolist()
     dtw = SimpleDTW(X, Y)
     C = dtw.compute_cost_matrix()
     D = dtw.compute_accumulated_cost_matrix()
@@ -74,18 +79,19 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
 
     P = np.array(P) 
-    plt.figure(figsize=(9, 3))
+    fig = plt.figure(figsize=(9, 3))
     plt.subplot(1, 2, 1)
-    plt.imshow(C, cmap='gray_r', origin='lower', aspect='equal')
+    plt.imshow(C, cmap="YlGnBu", origin='lower', aspect='equal')
     plt.plot(P[:, 1], P[:, 0], marker='o', color='r')
     plt.clim([0, np.max(C)])
     plt.colorbar()
     plt.title('$C$ with optimal warping path')
     plt.xlabel('Sequence Y')
     plt.ylabel('Sequence X')
+    fig.savefig('img/cost_matrix.png')
 
     plt.subplot(1, 2, 2)
-    plt.imshow(D, cmap='gray_r', origin='lower', aspect='equal')
+    plt.imshow(D, cmap="YlGnBu", origin='lower', aspect='equal')
     plt.plot(P[:, 1], P[:, 0], marker='o', color='r')
     plt.clim([0, np.max(D)])
     plt.colorbar()
@@ -93,6 +99,23 @@ if __name__=='__main__':
     plt.xlabel('Sequence Y')
     plt.ylabel('Sequence X')
     plt.tight_layout()
+    fig.savefig('img/accumulated_cost_matrix.png')
+    plt.show()
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    # Remove the border and axes ticks
+    fig.patch.set_visible(False)
+    ax.axis('off')
+
+    for [map_x, map_y] in P:
+        ax.plot([map_x, map_y], [X[map_x], Y[map_y]], '--k', linewidth=4)
+
+    ax.plot(X, '-ro', label='x', linewidth=4, markersize=20, markerfacecolor='salmon', markeredgecolor='salmon')
+    ax.plot(Y, '-bo', label='y', linewidth=4, markersize=20, markerfacecolor='skyblue', markeredgecolor='skyblue')
+    ax.set_title("DTW Distance", fontsize=28, fontweight="bold")
+    ax.legend(fontsize=20)
+    plt.tight_layout()
+    fig.savefig('img/dtw_distance.png')
     plt.show()
 
     
