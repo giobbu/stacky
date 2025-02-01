@@ -105,29 +105,29 @@ class BivariateAnalyzer:
 
         # Reset index and reshape for plotting
         pval_df = pval_df.reset_index().melt(id_vars="index", var_name="method", value_name="significant")
-        pval_df.columns = ["critical", "method", "significant"]
+        pval_df.columns = ["critical levels", "method", "significant"]
 
         # Add correlation and p-value columns for plotting
-        pval_df["relation"] = pval_df["method"].apply(lambda x: self.results[x]["relation"])
+        pval_df["relation strength"] = pval_df["method"].apply(lambda x: self.results[x]["relation"])
         pval_df["p-value"] = pval_df["method"].apply(lambda x: self.results[x]["p-value"])
         # create unique coluln with method and p-value
-        pval_df["method_pval"] = pval_df["method"] + " (p-value: " + pval_df["p-value"].astype(str) + ")"
+        pval_df["method (p-value)"] = pval_df["method"] + " (p-value: " + pval_df["p-value"].astype(str) + ")"
 
         # plot the pval_df using a heatmap with index as critical, columns as method, and values as correlation and color as significant
         plt.figure(figsize=(10, 5))
-        sns.heatmap(pval_df.pivot(index="critical", columns="method_pval", values="relation"),
+        sns.heatmap(pval_df.pivot(index="critical levels", columns="method (p-value)", values="relation strength"),
                     # green if +1, red if -1, white if 0 from negative red to positive green
                     cmap="RdYlGn",
                     center=0,  # Center the color map at zero
                     annot=True,
                     fmt=".3f",
                     cbar=False,
-                    linewidths=1,
-                    linecolor="black",
+                    linewidths=3,
+                    linecolor="white",
                     vmin=-1,  # Ensure -1 is the minimum value
                     vmax=1,  # Ensure 1 is the maximum value
                     )
-        plt.title(" Association between variables and significance levels")
+        plt.title(" Association between two variables with significance levels")
         plt.show()
 
     def plot_scatter(self) -> None:
@@ -160,8 +160,8 @@ if __name__ == "__main__":
     waiting = np.random.poisson(5, n)
     duration = 10 * waiting**2 + np.random.normal(0, 0.1, n)
     df = pd.DataFrame({"waiting": waiting, "duration": duration})
-    
+    # create BivariateAnalyzer object
     params = {'n_neighbors': 15, 'num_permutations': 100, 'num_jobs': -1}
     bivariate = BivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True, mi_params=params)
-    results = bivariate.compute_association()
-    bivariate.plot_association()
+    results = bivariate.compute_association()  # calculate association
+    bivariate.plot_association()  # plot association
