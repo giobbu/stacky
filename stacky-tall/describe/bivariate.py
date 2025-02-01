@@ -94,25 +94,20 @@ class BivariateAnalyzer:
         
         # Define critical thresholds
         critical_values = [0.001, 0.01, 0.05]
-
         # Prepare a DataFrame for critical value significance analysis
         pval_df = pd.DataFrame(index=[str(threshold) for threshold in critical_values])
-
         for method, result in self.results.items():
             pval_df[method] = [
                 1 if result['p-value'] <= threshold else 0 for threshold in critical_values
             ]
-
         # Reset index and reshape for plotting
         pval_df = pval_df.reset_index().melt(id_vars="index", var_name="method", value_name="significant")
         pval_df.columns = ["critical levels", "method", "significant"]
-
         # Add correlation and p-value columns for plotting
         pval_df["relation strength"] = pval_df["method"].apply(lambda x: self.results[x]["relation"])
         pval_df["p-value"] = pval_df["method"].apply(lambda x: self.results[x]["p-value"])
         # create unique coluln with method and p-value
         pval_df["method (p-value)"] = pval_df["method"] + " (p-value: " + pval_df["p-value"].astype(str) + ")"
-
         # plot the pval_df using a heatmap with index as critical, columns as method, and values as correlation and color as significant
         plt.figure(figsize=(10, 5))
         sns.heatmap(pval_df.pivot(index="critical levels", columns="method (p-value)", values="relation strength"),
@@ -130,38 +125,38 @@ class BivariateAnalyzer:
         plt.title(" Association between two variables with significance levels")
         plt.show()
 
-    def plot_scatter(self) -> None:
-        sns.scatterplot(data=self.df, x=self.x, y=self.y)
+    def plot_eda(self) -> None:
+        " Plot a jointplot of the two variables. "
+        # plot jointplot
+        g = sns.jointplot(data=self.df, x=self.x, y=self.y, alpha=0.5)
+        # add plot_joint
+        g.plot_joint(sns.kdeplot, zorder=0, levels=6, fill = True, cmap="viridis")
         plt.show()
-
-    def plot_kde(self) -> None:
-        sns.kdeplot(data=self.df, x=self.x, y=self.y, fill=True)
+        # plot ecdf of x
+        sns.ecdfplot(data=self.df,)
+        plt.title("Empirical Cumulative Distribution Function")
         plt.show()
-
-    def plot_pairplot(self) -> None:
-        g = sns.pairplot(data=self.df, diag_kind="kde", markers=["o", "s"]) 
-        g.map_lower(sns.kdeplot, levels=4, color=".2")
+        # plot violinplot
+        sns.violinplot(data=self.df, alpha=0.1)
+        # add stripplot
+        sns.stripplot(data=self.df, alpha=0.5)
+        plt.title("Violinplot of the two variables")
         plt.show()
-
-    def plot_jointplot(self) -> None:
-        sns.jointplot(data=self.df, x=self.x, y=self.y, kind="reg")
-        plt.show()
-
-    def plot_ecdf(self) -> None:
-        sns.ecdfplot(data=self.df)
-        plt.show()
-
 
 
 if __name__ == "__main__":
     # create daframe with two variables negative correlated
     np.random.seed(42)
-    n = 10000
-    waiting = np.random.poisson(5, n)
-    duration = 10 * waiting**2 + np.random.normal(0, 0.1, n)
+    n = 1000
+    waiting = np.random.uniform(0, 100, n)
+    duration = np.cos(100 * waiting) + np.random.normal(5, 10, n)
     df = pd.DataFrame({"waiting": waiting, "duration": duration})
     # create BivariateAnalyzer object
     params = {'n_neighbors': 15, 'num_permutations': 100, 'num_jobs': -1}
     bivariate = BivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True, mi_params=params)
-    results = bivariate.compute_association()  # calculate association
-    bivariate.plot_association()  # plot association
+    # lppot pairplot
+    #bivariate.plot_pairplot()
+    # plot jointplot
+    bivariate.plot_eda()
+    # results = bivariate.compute_association()  # calculate association
+    # bivariate.plot_association()  # plot association
