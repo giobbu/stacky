@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.feature_selection import mutual_info_regression
 
-class BivariateAnalyzer:
+class VanillaBivariateAnalyzer:
     " Class for analysis of two variables. "
-
     def __init__(self, df: pd.DataFrame, x: str, y: str, mutual_info: bool = False, mi_params: dict = None) -> None:
         " Initialize the BivariateAnalyzer object. "
         self.df = df
@@ -60,7 +59,7 @@ class BivariateAnalyzer:
 
 
     def compute_association(self) -> dict:
-        # Define correlation methods
+        " Compute the strength coefficients and p-values for the two variables. "
         methods = {
             'Pearson': stats.pearsonr,
             'Spearman': stats.spearmanr,
@@ -87,11 +86,9 @@ class BivariateAnalyzer:
     def plot_association(self) -> dict:
         """
         Calculate and plot the Pearson, Spearman, and Kendall correlation coefficients and their p-values.
-
         Returns:
             dict: A dictionary containing the correlation coefficients and p-values for each method.
         """
-        
         # Define critical thresholds
         critical_values = [0.001, 0.01, 0.05]
         # Prepare a DataFrame for critical value significance analysis
@@ -127,21 +124,26 @@ class BivariateAnalyzer:
 
     def plot_eda(self) -> None:
         " Plot a jointplot of the two variables. "
-        # plot jointplot
-        g = sns.jointplot(data=self.df, x=self.x, y=self.y, alpha=0.5)
-        # add plot_joint
-        g.plot_joint(sns.kdeplot, zorder=0, levels=6, fill = True, cmap="viridis")
-        plt.show()
+
         # plot ecdf of x
         sns.ecdfplot(data=self.df,)
         plt.title("Empirical Cumulative Distribution Function")
         plt.show()
+        
         # plot violinplot
         sns.violinplot(data=self.df, alpha=0.1)
         # add stripplot
         sns.stripplot(data=self.df, alpha=0.5)
         plt.title("Violinplot of the two variables")
         plt.show()
+
+
+        # plot jointplot
+        g = sns.jointplot(data=self.df, x=self.x, y=self.y, alpha=0.5)
+        # add plot_joint
+        g.plot_joint(sns.kdeplot, zorder=0, levels=6, fill = True, cmap="viridis")
+        plt.show()
+
 
 
 if __name__ == "__main__":
@@ -153,10 +155,9 @@ if __name__ == "__main__":
     df = pd.DataFrame({"waiting": waiting, "duration": duration})
     # create BivariateAnalyzer object
     params = {'n_neighbors': 15, 'num_permutations': 100, 'num_jobs': -1}
-    bivariate = BivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True, mi_params=params)
-    # lppot pairplot
-    #bivariate.plot_pairplot()
+    bivariate = VanillaBivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True, mi_params=params)
     # plot jointplot
     bivariate.plot_eda()
-    # results = bivariate.compute_association()  # calculate association
-    # bivariate.plot_association()  # plot association
+    # compute and plot association
+    results = bivariate.compute_association()  # calculate association
+    bivariate.plot_association()  # plot association
