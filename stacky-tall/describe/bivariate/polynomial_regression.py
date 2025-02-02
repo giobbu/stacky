@@ -3,24 +3,23 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-
-class RegressionAnalyzer:
-    " Class for regression analysis of two variables. "
+class PolyAnalyzer:
+    " Class for polynomial regression analysis of two variables. "
     def __init__(self, x: np.ndarray, y: np.ndarray, data: pd.DataFrame = None):
-        " Initialize the RegressionBivariateAnalyzer object. "
+        " Initialize the PolyAnalyzer object. "
         self.x = x
         self.y = y
         self.df = data
 
     def __repr__(self):
         """
-        Return a string representation of the RegressionBivariateAnalyzer object.
+        Return a string representation of the PolyAnalyzer object.
         """
-        return f"RegressionBivariateAnalyzer(x={self.x}, y={self.y})"
+        return f"PolyAnalyzer(x={self.x}, y={self.y}, data={self.df})"
 
-    def plot_regression(self, order: int = 1, ci: int = 95, lowess_smoother_res: bool = False):
+    def plot_polynomial_regr(self, order: int = 1, ci: int = 95, lowess_smoother_res: bool = False):
         """
-        Plot a regression plot between two variables.
+        Plot a polynomial regression between two variables x and y.
         """
         coefs = np.polyfit(self.x, self.y, order).round(3)
         # two subplots
@@ -37,7 +36,7 @@ class RegressionAnalyzer:
                     label=f"coefs: {coefs[:-1][::-1]}")
         ax[0].set_xlabel(x_name)
         ax[0].set_ylabel(y_name)
-        ax[0].set_title(f"Regression plot between {x_name} and {y_name} with order: {order}")
+        ax[0].set_title(f"Polynomial regression plot between {x_name} and {y_name} with order: {order}")
         ax[0].grid(True)
         ax[0].legend()
         # plot residuals
@@ -69,6 +68,7 @@ if __name__=="__main__":
     # create a dataframe xith columns names
     data = pd.DataFrame({"x": x, "y": y})
     # create a RegressionAnalyzer object
-    ra = RegressionAnalyzer(x, y, data)
+    ra = PolyAnalyzer(x, y, data)
     # plot the regression results
     ra.plot_regression(ci=95, lowess_smoother_res=False, order=3)
+
