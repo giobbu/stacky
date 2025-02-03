@@ -6,13 +6,14 @@ from sklearn.model_selection import train_test_split
 class RegressionMISOLoader:
     " Class for preparing Multiple Inputs Single Output (MISO) data for training deep learning regression models. "
 
-    def __init__(self, data, split_size, batch_size, window_size, target_name):
+    def __init__(self, data, split_size, batch_size, window_size, target_name, cache_on = 'RAM'):
         " Initialize the class with the data, split size, batch size, window size, and target name. "
         self.data = data
         self.batch_size = batch_size
         self.split_size = split_size
         self.window_size = window_size
         self.target_name = target_name
+        self.cache_on = cache_on  # cache on RAM (small datasets) or DISK (large datasets) or not cache
 
     def _split_data(self):
         " Split the data into training and testing. "
@@ -21,18 +22,23 @@ class RegressionMISOLoader:
         
     def _prepare_data(self, data):
         " Prepare the data for training and validation. "
-        # Create a tf.data.Dataset from the pandas dataframe
-        features = tf.data.Dataset.from_tensor_slices(data.drop(columns=[self.target_name]))
-        target = tf.data.Dataset.from_tensor_slices(data[self.target_name])
-        # Window the features and target
-        windowed_features = features.window(self.window_size,  drop_remainder=True)
-        windowed_target = target.window(self.window_size,  drop_remainder=True)
-        # Flatten the windows
-        feat = windowed_features.flat_map(lambda window: window.batch(self.window_size))
-        label = windowed_target.flat_map(lambda window: window.batch(self.window_size))
-        # Combine the features and target
-        dataset = tf.data.Dataset.zip((feat, label)) 
-        return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+        with tf.device('/cpu:0'):
+            # Create a tf.data.Dataset from the pandas dataframe
+            features = tf.data.Dataset.from_tensor_slices(data.drop(columns=[self.target_name]))
+            target = tf.data.Dataset.from_tensor_slices(data[self.target_name])
+            # Window the features and target
+            windowed_features = features.window(self.window_size,  drop_remainder=True)
+            windowed_target = target.window(self.window_size,  drop_remainder=True)
+            # Flatten the windows
+            feat = windowed_features.flat_map(lambda window: window.batch(self.window_size))
+            label = windowed_target.flat_map(lambda window: window.batch(self.window_size))
+            # Combine the features and target
+            dataset = tf.data.Dataset.zip((feat, label)) 
+            # Batch the dataset
+            if self.cache_on == 'RAM':
+                return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+            elif self.cache_on == 'NO_CACHE':
+                return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
     
     def prepare_training_validation(self):
         " Prepare the data for training and validation. "
@@ -43,26 +49,31 @@ class RegressionMISOLoader:
 
     def prepare_test(self, test_data):
         " Prepare dat for testing"
-        features = tf.data.Dataset.from_tensor_slices(test_data)  # features only
-        windowed_features = features.window(self.window_size,  drop_remainder=True)  # windowing features
-        feat = windowed_features.flat_map(lambda window: window.batch(self.window_size)) # apply flat map
-        dataset = tf.data.Dataset.zip(feat)  # zip data 
-        return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
-
+        with tf.device('/cpu:0'):
+            features = tf.data.Dataset.from_tensor_slices(test_data)  # features only
+            windowed_features = features.window(self.window_size,  drop_remainder=True)  # windowing features
+            feat = windowed_features.flat_map(lambda window: window.batch(self.window_size)) # apply flat map
+            dataset = tf.data.Dataset.zip(feat)  # zip data
+            # Batch the dataset
+            if self.cache_on == 'RAM':
+                return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+            elif self.cache_on == 'NO_CACHE':
+                return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
 
 if __name__=="__main__":
 
     # create dataset with features and label
-    train_data = pd.DataFrame({'feature1': np.random.rand(100), 'feature2': np.random.rand(100), 'label': np.random.rand(100)})
+    num_observations = 1000
+    train_data = pd.DataFrame({'feature1': np.random.rand(num_observations), 'feature2': np.random.rand(num_observations), 'label': np.random.rand(num_observations)})
 
     # initialize instance object
-    miso = RegressionMISOLoader(data=train_data, split_size=0.2, batch_size=32, window_size=5, target_name='label')
+    miso = RegressionMISOLoader(data=train_data, split_size=0.2, batch_size=32, window_size=5, target_name='label', cache_on='NO_CACHE')
 
     # process data for training and validation
     train_data, val_data = miso.prepare_training_validation()
 
     # create test data
-    test_data = pd.DataFrame({'feature1': np.random.rand(100), 'feature2': np.random.rand(100)})
+    test_data = pd.DataFrame({'feature1': np.random.rand(num_observations), 'feature2': np.random.rand(num_observations)})
 
     # process data for testing
     test_data = miso.prepare_test(test_data)
@@ -79,3 +90,4 @@ if __name__=="__main__":
     for x in test_data:
         print('testing', x.shape)
         break
+
