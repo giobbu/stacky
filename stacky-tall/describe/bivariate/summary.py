@@ -124,24 +124,29 @@ class VanillaBivariateAnalyzer:
 
     def plot_eda(self) -> None:
         " Plot a jointplot of the two variables. "
-
         # plot ecdf of x
         sns.ecdfplot(data=self.df,)
         plt.title("Empirical Cumulative Distribution Function")
         plt.show()
-        
         # plot violinplot
         sns.violinplot(data=self.df, alpha=0.1)
         # add stripplot
         sns.stripplot(data=self.df, alpha=0.5)
         plt.title("Violinplot of the two variables")
         plt.show()
-
-
         # plot jointplot
         g = sns.jointplot(data=self.df, x=self.x, y=self.y, alpha=0.5)
         # add plot_joint
         g.plot_joint(sns.kdeplot, zorder=0, levels=6, fill = True, cmap="viridis")
+        plt.show()
+
+    def plot_marginals(self) -> None:
+        fig, axes = plt.subplots(1, 2, figsize=(20, 5))
+        sns.kdeplot(self.df[self.x], ax=axes[0], color='purple')
+        sns.kdeplot(self.df[self.y], ax=axes[1], color='blue')
+        axes[0].set_title(self.df.columns[0])
+        axes[1].set_title(self.df.columns[1])
+        plt.suptitle("Marginal Distributions of Two Variables")
         plt.show()
 
 
@@ -156,8 +161,10 @@ if __name__ == "__main__":
     # create BivariateAnalyzer object
     params = {'n_neighbors': 15, 'num_permutations': 100, 'num_jobs': -1}
     bivariate = VanillaBivariateAnalyzer(df=df, x="waiting", y="duration", mutual_info=True, mi_params=params)
-    # plot jointplot
-    bivariate.plot_eda()
-    # compute and plot association
-    results = bivariate.compute_association()  # calculate association
-    bivariate.plot_association()  # plot association
+    # # plot jointplot
+    # bivariate.plot_eda()
+    # # compute and plot association
+    # results = bivariate.compute_association()  # calculate association
+    # bivariate.plot_association()  # plot association
+    # plot marginals
+    bivariate.plot_marginals()  # plot marginals
