@@ -37,7 +37,7 @@ class RegressionMIMOLoader:
         label = windowed_target.flat_map(lambda window: window.batch(self.window_size))
         # Combine the features and target
         dataset = tf.data.Dataset.zip((feat, label)) 
-        return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+        return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
     
     def prepare_training_validation(self):
         " Prepare the data for training and validation. "
@@ -52,7 +52,7 @@ class RegressionMIMOLoader:
         windowed_features = features.window(self.window_size,  drop_remainder=True)  # windowing features
         feat = windowed_features.flat_map(lambda window: window.batch(self.window_size)) # apply flat map
         dataset = tf.data.Dataset.zip(feat)  # zip data 
-        return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
+        return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
 
 
 if __name__=="__main__":
