@@ -11,13 +11,14 @@ from sklearn.model_selection import train_test_split
 class RegressionMIMOLoader:
     " Class for preparing Multiple Inputs Multiple Output (MIMO) data for training deep learning regression models. "
 
-    def __init__(self, data, split_size, batch_size, window_size, target_names):
+    def __init__(self, data, split_size, batch_size, window_size, target_names, cache_on = 'RAM'):
         " Initialize the class with the data, split size, batch size, window size, and target name. "
         self.data = data
         self.batch_size = batch_size
         self.split_size = split_size
         self.window_size = window_size
         self.target_names = target_names
+        self.cache_on = cache_on  # cache on RAM (small datasets) or not cache
 
     def _split_data(self):
         " Split the data into training and testing. "
@@ -36,8 +37,11 @@ class RegressionMIMOLoader:
         feat = windowed_features.flat_map(lambda window: window.batch(self.window_size))
         label = windowed_target.flat_map(lambda window: window.batch(self.window_size))
         # Combine the features and target
-        dataset = tf.data.Dataset.zip((feat, label)) 
-        return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+        dataset = tf.data.Dataset.zip((feat, label))
+        if self.cache_on == 'RAM':
+            return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+        elif self.cache_on == 'NO_CACHE':
+            return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
     
     def prepare_training_validation(self):
         " Prepare the data for training and validation. "
@@ -51,8 +55,12 @@ class RegressionMIMOLoader:
         features = tf.data.Dataset.from_tensor_slices(test_data)  # features only
         windowed_features = features.window(self.window_size,  drop_remainder=True)  # windowing features
         feat = windowed_features.flat_map(lambda window: window.batch(self.window_size)) # apply flat map
-        dataset = tf.data.Dataset.zip(feat)  # zip data 
-        return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+        dataset = tf.data.Dataset.zip(feat)  # zip data
+        # Batch the dataset
+        if self.cache_on == 'RAM':
+            return dataset.batch(self.batch_size).cache().prefetch(tf.data.experimental.AUTOTUNE)
+        elif self.cache_on == 'NO_CACHE':
+            return dataset.batch(self.batch_size).prefetch(tf.data.experimental.AUTOTUNE)
 
 
 if __name__=="__main__":
