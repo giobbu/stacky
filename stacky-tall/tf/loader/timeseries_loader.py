@@ -65,8 +65,10 @@ class AutoregressiveMIMOLoader:
 
 if __name__=="__main__":
 
+        # UNIVARIATE CASE
+
     # create dataset with features and label
-    train_data = pd.DataFrame({'feature1': np.random.rand(100), 'feature2': np.random.rand(100), 'label1': np.random.rand(100), 'label2': np.random.rand(100)})
+    train_data = pd.DataFrame({'timeseries': np.random.rand(100)})
 
     # create an instance of the class
     miso = AutoregressiveMIMOLoader(data=train_data, split_size=0.2, batch_size=32, window_size_past=5, window_size_future=3)
@@ -79,6 +81,34 @@ if __name__=="__main__":
     test_data = miso.prepare_test(test_data)
 
     # plot two consecutive windows
+    print('UNIVARIATE CASE')
+    for x, y in train_data.take(1):
+        for i in range(2):
+            print('\n')
+            print(f'Window {i+1} features:')
+            print(x[i].numpy())
+            print('\n')
+
+
+
+    # MULTIVARIATE CASE
+
+    # create dataset with features and label
+    train_data = pd.DataFrame({'timeseries1': np.random.rand(100), 'timeseries2': np.random.rand(100), 'timeseries3': np.random.rand(100), 'timeseries4': np.random.rand(100)})
+
+    # create an instance of the class
+    miso = AutoregressiveMIMOLoader(data=train_data, split_size=0.2, batch_size=32, window_size_past=5, window_size_future=3)
+
+    # prepare training and validation data
+    train_data, val_data = miso.prepare_training_validation()
+
+    # prepare test data
+    test_data = np.random.rand(100)
+    test_data = miso.prepare_test(test_data)
+
+    # plot two consecutive windows
+    print('\n')
+    print('MULTIVARIATE CASE')
     for x, y in train_data.take(1):
         for i in range(2):
             print('\n')
