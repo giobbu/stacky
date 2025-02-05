@@ -34,10 +34,10 @@ class EVTAnalyzer:
         return_level = self._estimate_return_level(quantile)
         return return_level
 
-    def get_return_period(self, return_level):
+    def get_return_period(self, level_value):
         "Estimate return period for given return level"
         shape, loc, scale = self.fit_GEV()
-        cdf = self.cdf_GEV(return_level, shape, loc, scale)
+        cdf = self.cdf_GEV(level_value, shape, loc, scale)
         return_period = 1/(1-cdf)
         return return_period
     
@@ -46,19 +46,21 @@ if __name__ == '__main__':
     # Generate some random data
     data = np.random.normal(0, 50, 10000)
     data = pd.Series(data)
+
     # Block maximas
     block_maxima = data.rolling(window=10).max().dropna()
 
     evt = EVTAnalyzer(block_maxima)
     shape, loc, scale = evt.fit_GEV()
     value = 150
-    quantile = evt.cdf_GEV(value, shape, loc, scale)
-    return_level = evt._estimate_return_level(quantile, loc, scale, shape)
+    cdf = evt.cdf_GEV(value, shape, loc, scale)
+    return_level = evt._estimate_return_level(cdf, loc, scale, shape)
     return_period = evt.get_return_period(return_level)
 
     print('return_period', return_period)
     print('return_level', return_level)
-    print('quantile', quantile)
+    print('probability of exceedance', 1 - cdf)
+    print('cdf', cdf)
 
     import matplotlib.pyplot as plt
     # subplots horizontal
@@ -68,8 +70,19 @@ if __name__ == '__main__':
     x_r80 = np.arange(-100, 500)
     plt.plot(x_r80, gev.pdf(x_r80, shape, loc=loc, scale=scale), "k", lw=3, label='GEV')
     plt.plot(x_r80, norm.pdf(x_r80, loc=loc, scale=scale), "r", lw=1, label='Normal', alpha=0.5)
-    plt.axvline(value, color='red', label='value')
+    plt.axvline(value, color='b', label='return level', linestyle='--')
     plt.legend()
-    plt.title(f'Extreme Value Theory - GEV Distribution - Quantile: {quantile:.2f} - Return Level (Set): {return_level:.2f} - Return Period: {return_period:.2f}')
+    plt.title(f'GEV PDF - Return Level (Set): {return_level:.2f} - Return Period: {return_period:.2f}')
+    plt.show()
+
+    # plot cdf
+    x = np.linspace(-100, 500, 1000)
+    y = gev.cdf(x, shape, loc=loc, scale=scale)
+    figure = plt.figure(figsize=(10, 5))
+    plt.plot(x, y)
+    plt.axhline(cdf, color='b', linestyle='--')
+    plt.axvline(value, color='b', linestyle='--')
+    plt.title(f'GEV CDF - Probability of Exceedance: {1 - cdf:.2f} - Return Level (Set): {return_level:.2f} - Return Period: {return_period:.2f}')
+    plt.legend()
     plt.show()
 
