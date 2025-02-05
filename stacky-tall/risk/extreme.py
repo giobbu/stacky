@@ -3,47 +3,44 @@ import pandas as pd
 from scipy.stats import norm
 from scipy.stats import genextreme as gev
 
-class EVTAnalyzer:
-    " Extreme Value Theory Analyzer"
-    def __init__(self, data, method='GEV'):
-        assert method in ['GEV', 'GPD', 'EMP'], 'Method must'
+class GEVAnalyzer:
+    "Extreme Value Theory Analyzer"
+    def __init__(self, data):
         assert isinstance(data, pd.Series), 'Data must be a pandas Series'
         self.data = data
-        self.method = method
 
-    def _fit_GEV(self):
+    def compute_block_maxima(self, period_window=10):
+        " Compute block maxima"
+        self.block_maxima = self.data.rolling(window=period_window).max().dropna()
+        return self.block_maxima
+
+    def maximum_likelihood_estimation(self):
         " Fit GEV distribution to data"
-        shape, loc, scale = gev.fit(self.data.values, 0)
+        shape, loc, scale = gev.fit(self.block_maxima.values, 0)
         return shape, loc, scale
     
-    def _quantile_GEV(self, value, shape, loc, scale):
-        " Calculate quantile for given value"
-        quantile = gev.cdf(value, shape, loc, scale)
-        return quantile
+    def cdf_GEV(self, value, shape, loc, scale):
+        " Calculate probability for given value"
+        probability = gev.cdf(value, shape, loc, scale)
+        return probability
     
-    def generate_sample(self, size=10000):
-        " Generate sample from fitted distribution"
-        shape, loc, scale = self._fit_GEV()
-        samples = gev.rvs(shape, loc, scale, size=size)
-        return samples
-    
-    def estimate_return_level(self, quantile, loc, scale, shape):
-        "Estimate return level for given quantile"
-        shape, loc, scale = self._fit_GEV()
-        level = loc +  scale/ shape * (1 - (-np.log(quantile)) ** (shape))
-        return level
+    def _estimate_return_level(self, probability, loc, scale, shape):
+        "Estimate return level for given probability"
+        shape, loc, scale = self.maximum_likelihood_estimation()
+        return_level = gev.ppf(probability, shape, loc, scale)
+        return return_level
 
     def get_return_level(self, return_period):
         "Estimate return level for given return period"
-        quantile = 1 - 1/return_period
-        return_level = self.estimate_return_level(quantile)
+        probability = 1 - 1/return_period
+        return_level = self._estimate_return_level(probability)
         return return_level
 
-    def get_return_period(self, return_level):
+    def get_return_period(self, level_value):
         "Estimate return period for given return level"
-        shape, loc, scale = self._fit_GEV()
-        quantile = self._quantile_GEV(return_level, shape, loc, scale)
-        return_period = 1/(1-quantile)
+        shape, loc, scale = self.maximum_likelihood_estimation()
+        probability = self.cdf_GEV(level_value, shape, loc, scale)
+        return_period = 1/(1-probability)
         return return_period
     
 if __name__ == '__main__':
@@ -51,30 +48,54 @@ if __name__ == '__main__':
     # Generate some random data
     data = np.random.normal(0, 50, 10000)
     data = pd.Series(data)
-    # Block maximas
-    block_maxima = data.rolling(window=10).max().dropna()
 
-    evt = EVTAnalyzer(block_maxima)
-    shape, loc, scale = evt._fit_GEV()
+    # Initialize GEVAnalyzer
+    evt = GEVAnalyzer(data)
+
+    # Block maximas
+    block_maxima = evt.compute_block_maxima(period_window=10)
+
+    # Compute maximum likelihood estimation
+    shape, loc, scale = evt.maximum_likelihood_estimation()
+
+    # Set return period
     value = 150
-    quantile = evt._quantile_GEV(value, shape, loc, scale)
-    return_level = evt.estimate_return_level(quantile, loc, scale, shape)
+
+    # Calculate probability
+    probability = evt.cdf_GEV(value, shape, loc, scale)
+
+    # Calculate return level
+    return_level = evt._estimate_return_level(probability, loc, scale, shape)
+
+    # Calculate return period
     return_period = evt.get_return_period(return_level)
 
     print('return_period', return_period)
     print('return_level', return_level)
-    print('quantile', quantile)
+    print('probability of exceedance', 1 - probability)
+    print('probability', probability)
 
     import matplotlib.pyplot as plt
     # subplots horizontal
-    figure = plt.figure(figsize=(10, 5))
-    plt.hist(data, bins=20, density=True, label='data', alpha=0.5)
-    plt.hist(block_maxima, bins=20, density=True, label='block_maxima')
+    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+    fig.suptitle(f'GEV - Probability of Exceedance: {1 - probability:.2f} - Return Level (Set): {return_level:.2f} - Return Period: {return_period:.2f}')
+
+    ax[0].hist(data, bins=20, density=True, label='all data', alpha=0.5)
+    ax[0].hist(block_maxima, bins=20, density=True, label='block maxima data')
     x_r80 = np.arange(-100, 500)
-    plt.plot(x_r80, gev.pdf(x_r80, shape, loc=loc, scale=scale), "k", lw=3, label='GEV')
-    plt.plot(x_r80, norm.pdf(x_r80, loc=loc, scale=scale), "r", lw=1, label='Normal', alpha=0.5)
-    plt.axvline(value, color='red', label='value')
-    plt.legend()
-    plt.title(f'Extreme Value Theory - GEV Distribution - Quantile: {quantile:.2f} - Return Level (Set): {return_level:.2f} - Return Period: {return_period:.2f}')
+    ax[0].plot(x_r80, gev.pdf(x_r80, shape, loc=loc, scale=scale), "k", lw=3, label='GEV (good fit)')
+    ax[0].plot(x_r80, norm.pdf(x_r80, loc=loc, scale=scale), "r", lw=1, label='Normal (bad fit)', alpha=0.5)
+    ax[0].axvline(value, color='b', label='return level', linestyle='--')
+    ax[0].legend()
+
+    # plot cdf
+    x = np.linspace(-100, 500, 1000)
+    y = gev.cdf(x, shape, loc=loc, scale=scale)
+    ax[1].plot(x, y)
+    ax[1].axhline(probability, color='b', linestyle='--')
+    ax[1].axvline(value, color='b', linestyle='--')
+    ax[1].legend()
+    # save plot
+    plt.savefig('imgs/gev.png')
     plt.show()
 
