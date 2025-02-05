@@ -4,46 +4,41 @@ from scipy.stats import norm
 from scipy.stats import genextreme as gev
 
 class EVTAnalyzer:
-    " Extreme Value Theory Analyzer"
+    " Extreme Value Theory Analyzer "
+
     def __init__(self, data, method='GEV'):
         assert method in ['GEV', 'GPD', 'EMP'], 'Method must'
         assert isinstance(data, pd.Series), 'Data must be a pandas Series'
         self.data = data
         self.method = method
 
-    def _fit_GEV(self):
+    def fit_GEV(self):
         " Fit GEV distribution to data"
         shape, loc, scale = gev.fit(self.data.values, 0)
         return shape, loc, scale
     
-    def _quantile_GEV(self, value, shape, loc, scale):
+    def cdf_GEV(self, value, shape, loc, scale):
         " Calculate quantile for given value"
-        quantile = gev.cdf(value, shape, loc, scale)
-        return quantile
+        cdf = gev.cdf(value, shape, loc, scale)
+        return cdf
     
-    def generate_sample(self, size=10000):
-        " Generate sample from fitted distribution"
-        shape, loc, scale = self._fit_GEV()
-        samples = gev.rvs(shape, loc, scale, size=size)
-        return samples
-    
-    def estimate_return_level(self, quantile, loc, scale, shape):
+    def _estimate_return_level(self, quantile, loc, scale, shape):
         "Estimate return level for given quantile"
-        shape, loc, scale = self._fit_GEV()
+        shape, loc, scale = self.fit_GEV()
         level = loc +  scale/ shape * (1 - (-np.log(quantile)) ** (shape))
         return level
 
     def get_return_level(self, return_period):
         "Estimate return level for given return period"
         quantile = 1 - 1/return_period
-        return_level = self.estimate_return_level(quantile)
+        return_level = self._estimate_return_level(quantile)
         return return_level
 
     def get_return_period(self, return_level):
         "Estimate return period for given return level"
-        shape, loc, scale = self._fit_GEV()
-        quantile = self._quantile_GEV(return_level, shape, loc, scale)
-        return_period = 1/(1-quantile)
+        shape, loc, scale = self.fit_GEV()
+        cdf = self.cdf_GEV(return_level, shape, loc, scale)
+        return_period = 1/(1-cdf)
         return return_period
     
 if __name__ == '__main__':
@@ -55,10 +50,10 @@ if __name__ == '__main__':
     block_maxima = data.rolling(window=10).max().dropna()
 
     evt = EVTAnalyzer(block_maxima)
-    shape, loc, scale = evt._fit_GEV()
+    shape, loc, scale = evt.fit_GEV()
     value = 150
-    quantile = evt._quantile_GEV(value, shape, loc, scale)
-    return_level = evt.estimate_return_level(quantile, loc, scale, shape)
+    quantile = evt.cdf_GEV(value, shape, loc, scale)
+    return_level = evt._estimate_return_level(quantile, loc, scale, shape)
     return_period = evt.get_return_period(return_level)
 
     print('return_period', return_period)
