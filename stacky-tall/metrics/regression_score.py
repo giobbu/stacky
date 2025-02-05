@@ -29,6 +29,11 @@ class RegressionMetrics:
         mape = np.mean(np.abs((self.y_trues - self.y_preds) / self.y_trues)) * 100
         return int(mape)
     
+    def nrmse(self) -> float:
+        " Normalized Root Mean Squared Error "
+        nrmse = self.rmse() / (np.max(self.y_trues) - np.min(self.y_trues))
+        return round(nrmse, self.decimals)
+    
     def r2(self) -> float:
         " R^2 Score "
         r2 = 1 - np.sum((self.y_trues - self.y_preds) ** 2) / np.sum((self.y_trues - np.mean(self.y_trues)) ** 2)
@@ -40,7 +45,8 @@ class RegressionMetrics:
                 'rmse': self.rmse(),
                 'mae': self.mae(),
                 'mape': self.mape(),
-                'r2': self.r2()
+                'r2': self.r2(),
+                'nrmse': self.nrmse()
             }
     
 
