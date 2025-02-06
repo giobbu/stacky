@@ -7,10 +7,10 @@ In time series analysis, dynamic time warping (DTW) is an algorithm for measurin
 * Step-size condition
 
 ### Cost Matrix through a Local Cost Measure
-![Image Alt Text](img/cost_matrix.png)
+![Image Alt Text](imgs/cost_matrix.png)
 
 ### Accumulated Cost Matrix with Dynamic Programming
-![Image Alt Text](img/accumulated_cost_matrix.png)
+![Image Alt Text](imgs/accumulated_cost_matrix.png)
 
 ### DTW Distance
-![Image Alt Text](img/dtw_distance.png)
+![Image Alt Text](imgs/dtw_distance.png)
