@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy import stats
 from scipy.stats import norm
 from scipy.stats import genextreme as gev
 
@@ -29,6 +30,22 @@ class GEVAnalyzer:
         shape, loc, scale = self.maximum_likelihood_estimation()
         return_level = gev.ppf(probability, shape, loc, scale)
         return return_level
+    
+    def get_empirical_return_period(self):
+        """
+        Compute empirical return priod for observed data
+        """
+        df = pd.DataFrame(index=np.arange(self.block_maxima.size))
+        # sort the data
+        df["sorted"] = np.sort(self.block_maxima)[::-1]
+        # rank via scipy instead to deal with duplicate values
+        df["ranks_sp"] = np.sort(stats.rankdata(-self.block_maxima))
+        # find exceedence probability
+        n = self.block_maxima.size
+        df["exceedance"] = df["ranks_sp"] / (n + 1)
+        # find return period
+        df["period"] = 1 / df["exceedance"]
+        return df
 
     def get_return_level(self, return_period):
         "Estimate return level for given return period"
