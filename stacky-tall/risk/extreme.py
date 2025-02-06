@@ -41,7 +41,7 @@ class GEVAnalyzer:
         # rank via scipy instead to deal with duplicate values
         df["ranks_sp"] = np.sort(stats.rankdata(-self.block_maxima))
         # find exceedence probability
-        n = data.size
+        n = self.block_maxima.size
         df["exceedance"] = df["ranks_sp"] / (n + 1)
         # find return period
         df["period"] = 1 / df["exceedance"]
