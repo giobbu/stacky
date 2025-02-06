@@ -92,7 +92,7 @@ if __name__=='__main__':
     plt.title('$C$ with optimal warping path')
     plt.xlabel('Sequence Y')
     plt.ylabel('Sequence X')
-    fig.savefig('img/cost_matrix.png')
+    fig.savefig('imgs/cost_matrix.png')
 
     # Plot the accumulated cost matrix and optimal warping path
     plt.subplot(1, 2, 2)
@@ -104,7 +104,7 @@ if __name__=='__main__':
     plt.xlabel('Sequence Y')
     plt.ylabel('Sequence X')
     plt.tight_layout()
-    fig.savefig('img/accumulated_cost_matrix.png')
+    fig.savefig('imgs/accumulated_cost_matrix.png')
     plt.show()
 
     # Plot the two time series and the optimal warping path
@@ -119,7 +119,7 @@ if __name__=='__main__':
     ax.set_title("DTW Distance", fontsize=10, fontweight="bold")
     ax.legend(fontsize=20)
     plt.tight_layout()
-    fig.savefig('img/dtw_distance.png')
+    fig.savefig('imgs/dtw_distance.png')
     plt.show()
 
     
