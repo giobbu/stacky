@@ -3,8 +3,10 @@
 ## Summary 
 
 ## Polynomials
+![Image Alt Text](imgs/polynomial_regr.png)
 
 ## Splines
+![Image Alt Text](imgs/splines_regr.png)
 
 ## Gaussian Copula
 
