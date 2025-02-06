@@ -1,5 +1,7 @@
 # Extreme Value Theory
 
-## Generalized Extreme Value Distribution (Block Maxima Extremes)
+## Stationary Conditions
+
+### Generalized Extreme Value Distribution (Block Maxima are the Extreme Events)
 
 ![Image Alt Text](imgs/gev.png)
