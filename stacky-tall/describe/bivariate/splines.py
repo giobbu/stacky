@@ -61,6 +61,8 @@ class SplinesAnalyzer:
         plt.title('Train/Test Points and Best Spline')
         # Add legend
         plt.legend()
+        # save
+        plt.savefig('imgs/splines_regr.png')
         # Display the plot
         plt.show()
 
@@ -69,7 +71,7 @@ if __name__=="__main__":
     # Set random seed for reproducibility
     np.random.seed(2)
     x = np.random.normal(0, 1, 1000)
-    y = x**3 + np.random.normal(0, 1, 1000)
+    y = np.cos(x) + np.random.normal(0, 0.1, 1000)
     s = 5  # Smoothing factor
     # Create a DataFrame
     data = pd.DataFrame({"x": x, "y": y})
@@ -77,3 +79,4 @@ if __name__=="__main__":
     sa = SplinesAnalyzer(x, y, data)
     # Plot the spline regression
     sa.plot_splines_regr(s=s, t=None, size_test=0.1)
+    

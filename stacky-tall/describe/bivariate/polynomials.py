@@ -53,6 +53,8 @@ class PolyAnalyzer:
         ax[1].set_title(f"Residual plot between {x_name} and {y_name} with order: {order}")
         ax[1].grid(True)
         ax[1].legend()
+        # save
+        plt.savefig("imgs/polynomial_regr.png")
         plt.show()
 
 
@@ -70,5 +72,5 @@ if __name__=="__main__":
     # create a RegressionAnalyzer object
     ra = PolyAnalyzer(x, y, data)
     # plot the regression results
-    ra.plot_regression(ci=95, lowess_smoother_res=False, order=3)
+    ra.plot_polynomial_regr(ci=95, lowess_smoother_res=False, order=3)
 
