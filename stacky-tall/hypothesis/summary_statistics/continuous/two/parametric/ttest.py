@@ -33,6 +33,12 @@ class TTests:
         Independent samples t-test
         """
         return ttest_ind(self.data, data2)
+    
+    def welchs_ttest(self, data2):
+        """
+        Welch's t-test
+        """
+        return ttest_ind(self.data, data2, equal_var=False)
 
     def ttest_rel(self, data2):
         """
