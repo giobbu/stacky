@@ -3,13 +3,13 @@ import pandas as pd
 
 class OneDKAnonymity:
     " One-Dimensional K-Anonymity Algorithm for Privacy Preserving Data Publishing with Mondrian Partitioning and continuous quasi-identifiers"
-    def __init__(self, data, k, qi):
+    def __init__(self, data: pd.DataFrame, k: int, qi: str):
         assert isinstance(data, pd.DataFrame), "data must be a pandas DataFrame"
         self.data = data
         self.k = k
         self.qi = qi
 
-    def mondrian_partition(self, data):
+    def mondrian_partition(self, data: pd.DataFrame):
         partitions = []
         # If the data is less than or equal to k, return the data
         if len(data) <= (2 * self.k-1):
@@ -27,7 +27,6 @@ class OneDKAnonymity:
         # Recursively partition the data
         partitions.extend(self.mondrian_partition(data_left))
         partitions.extend(self.mondrian_partition(data_right))
-
         return partitions
     
     def anonymize(self):
