@@ -17,9 +17,7 @@ loguru = "^0.7.3"
 scipy = "^1.15.1"
 matplotlib = "^3.10.0"
 missingno = "^0.5.2"
-
-# Add TensorFlow dependencies here for extras
-tensorflow-macos = "^2.16.2"
+tensorflow-macos = "^2.16.2"  # Add TensorFlow dependencies here for extras
 tensorflow-metal = "^1.1.0"
 tensorflow = "^2.16.2"
 numba = "^0.61.0"
