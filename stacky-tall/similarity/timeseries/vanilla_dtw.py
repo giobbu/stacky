@@ -5,7 +5,8 @@ import seaborn as sns
 
 class VanillaDTW:
     """ Basic Dynamic Time Warping (DTW) implementation."""
-    def __init__(self, X, Y, metric='euclidean'):
+    def __init__(self, X: list, Y: list, metric: str='euclidean'):
+        assert metric == 'euclidean', 'Only the Euclidean metric is supported for now.'
         self.X = X
         self.Y = Y
         self.metric = metric
