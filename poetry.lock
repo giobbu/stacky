@@ -2752,6 +2752,28 @@ video = ["av"]
 vision = ["Pillow (>=10.0.1,<=15.0)"]
 
 [[package]]
+name = "tslearn"
+version = "0.6.3"
+description = "A machine learning toolkit dedicated to time-series data"
+optional = false
+python-versions = "*"
+files = [
+    {file = "tslearn-0.6.3-py3-none-any.whl", hash = "sha256:18c3b1984b4be2af0e7579c0b914633f2220bba2b6610c11861c4563272e9169"},
+    {file = "tslearn-0.6.3.tar.gz", hash = "sha256:c855c0b784b42dc4c50f4eaf524ec7ed658037e86fc14af38ca3b66c75dd6adb"},
+]
+
+[package.dependencies]
+joblib = "*"
+numba = "*"
+numpy = "*"
+scikit-learn = "*"
+scipy = "*"
+
+[package.extras]
+pytorch = ["torch"]
+tests = ["pytest", "torch"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -2950,4 +2972,4 @@ tensorflow-x64 = ["tensorflow"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "42c81b8c1006e73b37a9203ddb1d88ce640c127d3253582dcc2f75c62684c811"
+content-hash = "11606f0951cad10e0cf6700676a68f45ffc1be27d1132908e738fdb3127fa68f"
