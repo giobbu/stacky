@@ -5,21 +5,22 @@ import seaborn as sns
 
 class WindowDTW:
     """ Basic Dynamic Time Warping (DTW) implementation."""
-
-    def __init__(self, X, Y, window, metric='euclidean'):
+    def __init__(self, X: list, Y: list, window: int, metric: str='euclidean'):
+        assert metric == 'euclidean', 'Only the Euclidean metric is supported for now.'
         self.X = X
         self.Y = Y
         self.metric = metric
         self.window = self._enforce_locality_constraint(window)
 
-    def _enforce_locality_constraint(self, window):
+    def _enforce_locality_constraint(self, window: int) -> int:
         " Compute the window size."
+        assert window >= 0, 'The window size must be greater than or equal to 0.'
         return max(window, abs(len(self.X)-len(self.Y)))
 
     def compute_cost_matrix(self) -> np.ndarray:
         " Compute the cost matrix using the specified metric."
         X, Y = np.atleast_2d(self.X, self.Y)
-        self.C = sp.spatial.distance.cdist(X.T, Y.T, metric=self.metric)
+        self.C = sp.spatial.distance.cdist(X.T, Y.T, metric=self.metric)  # Compute the pairwise distances
         return self.C
 
     def compute_accumulated_cost_matrix(self) -> np.ndarray:
@@ -42,8 +43,6 @@ class WindowDTW:
                 for m in range(max(1, n-self.window), min(M, n+self.window)):
                     self.D[n, m] = self.C[n, m] + min(self.D[n-1, m], self.D[n, m-1], self.D[n-1, m-1])
         return self.D
-
-
 
 if __name__=='__main__':
 
