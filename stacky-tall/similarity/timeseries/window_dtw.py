@@ -14,7 +14,7 @@ class WindowDTW:
 
     def _enforce_locality_constraint(self, window):
         " Compute the window size."
-        return max(window, abs(len(X)-len(Y)))
+        return max(window, abs(len(self.X)-len(self.Y)))
 
     def compute_cost_matrix(self) -> np.ndarray:
         " Compute the cost matrix using the specified metric."
