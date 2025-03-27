@@ -50,47 +50,28 @@ tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), index=[f"Doc{i+1}" for i in rang
 # Display TF-IDF scores
 print(tfidf_df)
 
-# Create a PCA object
-pca = PCA(n_components=2)
 
-# Fit and transform the TF-IDF matrix
-tfidf_pca = pca.fit_transform(tfidf_matrix.toarray())
+# apply knn to recommend documents
+from sklearn.neighbors import NearestNeighbors
 
-# Convert to DataFrame for readability
-tfidf_pca_df = pd.DataFrame(tfidf_pca, index=[f"Doc{i+1}" for i in range(len(documents))], columns=["PC1", "PC2"])
+# Create a NearestNeighbors object
+knn = NearestNeighbors(n_neighbors=3, algorithm='auto', metric='cosine')
 
-plt.figure(figsize=(10, 6))
-plt.scatter(tfidf_pca_df["PC1"], tfidf_pca_df["PC2"], color='blue')
-plt.xlabel("Principal Component 1")
-plt.ylabel("Principal Component 2")
-plt.title("PCA of TF-IDF Matrix")
-plt.grid(True)
-for i, txt in enumerate(tfidf_pca_df.index):
-    plt.annotate(txt, (tfidf_pca_df["PC1"][i], tfidf_pca_df["PC2"][i]))
-plt.show()
+# Fit NearestNeighbors to the TF-IDF matrix
+knn.fit(tfidf_matrix)
 
-# Create a KMeans object
-kmeans = KMeans(n_clusters=3, random_state=42)
+# Predict the nearest neighbors for a new document
+new_document = ["Machine learning is the disgusting future"]
+new_tfidf = vectorizer.transform(new_document)
 
-# Fit KMeans to the TF-IDF matrix
-kmeans.fit(tfidf_pca_df)
+# Make a prediction
+distances, indices = knn.kneighbors(new_tfidf)
+# Display the recommended documents
+recommended_docs = tfidf_df.index[indices.flatten()]
+print("Recommended documents for the new document:")
 
-# Add cluster labels to the DataFrame
-tfidf_pca_df["Cluster"] = kmeans.labels_
-
-# Plot the clustered documents
-plt.figure(figsize=(10, 6))
-colors = ['red', 'green', 'blue']
-for cluster in range(3):
-    cluster_df = tfidf_pca_df[tfidf_pca_df["Cluster"] == cluster]
-    plt.scatter(cluster_df["PC1"], cluster_df["PC2"], color=colors[cluster], label=f"Cluster {cluster}")
-    for i, txt in enumerate(cluster_df.index):
-        plt.annotate(txt, (cluster_df["PC1"][i], cluster_df["PC2"][i]))
-plt.xlabel("Principal Component 1")
-plt.ylabel("Principal Component 2")
-plt.title("KMeans Clustering of Documents")
-plt.legend()
-plt.grid(True)
-plt.show()
-
+for i in indices.flatten():
+    print('------')
+    print(documents[i])
+    print('------')
 
